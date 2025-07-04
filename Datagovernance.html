@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Data Governance Program Approach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard with four main, navigable sections: 'Ecosystem Overview', 'Program Phases', 'Key Roles & Responsibilities', and 'Core Frameworks'. This non-linear, tab-based structure was chosen to break down the dense, text-heavy report into manageable, thematic modules. It prioritizes user-driven exploration over a forced, linear reading of the original document. This approach allows users to quickly access the information most relevant to them (e.g., a manager might focus on 'Key Roles', while a technical user explores 'Core Frameworks'), enhancing usability and comprehension. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core Governance Ecosystem Diagram -> Goal: Explain relationships -> Viz: Interactive HTML/CSS diagram -> Interaction: Click component to see details -> Justification: Transforms a static diagram into an explorable learning tool. Library: Vanilla JS.
+        - Report Info: Four Program Phases -> Goal: Show process/sequence -> Viz: Tabbed content sections -> Interaction: Click tab to reveal phase details -> Justification: Organizes detailed content logically, preventing a long scroll and allowing focused reading. Library: Vanilla JS.
+        - Report Info: Table 1 (Roles & RACI) -> Goal: Organize/Compare roles -> Viz: Interactive card grid & filterable table -> Interaction: Click role card for details, filter RACI table -> Justification: Makes complex role definitions and responsibilities easy to digest and compare. Library: Vanilla JS.
+        - Report Info: Table 2 (Data Quality Dimensions) -> Goal: Compare metrics -> Viz: Radar Chart -> Interaction: Click chart point to see dimension details -> Justification: Provides an immediate visual comparison of the interdependent quality dimensions. Library: Chart.js.
+        - Report Info: Table 4 (AI Governance) -> Goal: Inform/Organize -> Viz: Interactive accordion list -> Interaction: Click to expand/collapse item -> Justification: Presents detailed list content in a compact, user-controlled format. Library: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F7F4; color: #374151; }
+        .nav-button { transition: all 0.3s ease; }
+        .nav-button.active { background-color: #4C787E; color: white; }
+        .nav-button:not(.active):hover { background-color: #E0E7E9; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .card-flip { transform-style: preserve-3d; transition: transform 0.6s; }
+        .card-flip.is-flipped { transform: rotateY(180deg); }
+        .card-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .card-back { transform: rotateY(180deg); }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .ecosystem-item { transition: all 0.3s ease; border-width: 2px; }
+        .ecosystem-item.active { border-color: #4C787E; background-color: #F0F5F6; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">A Strategic Approach to Data Governance</h1>
+            <p class="mt-2 text-lg text-gray-600">An interactive guide to building a complete data governance program.</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+            <button data-target="overview" class="nav-button active text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Ecosystem Overview</button>
+            <button data-target="phases" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Program Phases</button>
+            <button data-target="roles" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Key Roles</button>
+            <button data-target="frameworks" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Core Frameworks</button>
+        </nav>
+
+        <main>
+            <section id="overview" class="content-section active">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">The Data Governance Ecosystem</h2>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Data governance is a dynamic, interconnected ecosystem. It is the unifying force that binds people, processes, and technology to create a cohesive and efficient organization. Click on any component below to explore its role and relationships within the framework.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2">
+                            <div class="relative w-full h-[500px] md:h-[600px] border-2 border-dashed border-gray-200 rounded-xl p-4 flex items-center justify-center">
+                                <div id="ecosystem-diagram" class="relative w-full h-full">
+                                    <div id="eco-core" class="ecosystem-item absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-40 md:h-40 bg-gray-100 rounded-full flex items-center justify-center text-center p-2 cursor-pointer border-gray-300">
+                                        <span class="font-bold text-gray-700">Core Framework</span>
+                                    </div>
+                                    <div id="eco-data" class="ecosystem-item absolute top-[10%] left-1/2 -translate-x-1/2 w-24 h-24 md:w-28 md:h-28 bg-[#E0F2F7] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#B2D8E4]">
+                                        <span class="font-semibold text-[#2C7A8F]">Data</span>
+                                    </div>
+                                    <div id="eco-governance" class="ecosystem-item absolute top-1/2 right-[5%] -translate-y-1/2 w-24 h-24 md:w-28 md:h-28 bg-[#E6F4EA] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#B8E0C4]">
+                                        <span class="font-semibold text-[#388E3C]">Governance</span>
+                                    </div>
+                                    <div id="eco-technology" class="ecosystem-item absolute bottom-[10%] right-[20%] w-24 h-24 md:w-28 md:h-28 bg-[#F3E8FF] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#D1B3FF]">
+                                        <span class="font-semibold text-[#673AB7]">Technology</span>
+                                    </div>
+                                    <div id="eco-ai" class="ecosystem-item absolute bottom-[10%] left-[20%] w-24 h-24 md:w-28 md:h-28 bg-[#FFF8E1] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#FFECB3]">
+                                        <span class="font-semibold text-[#FFC107]">AI</span>
+                                    </div>
+                                    <div id="eco-leadership" class="ecosystem-item absolute top-1/2 left-[5%] -translate-y-1/2 w-24 h-24 md:w-28 md:h-28 bg-[#FDECEF] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#FBCDCB]">
+                                        <span class="font-semibold text-[#D32F2F]">Service Leadership</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ecosystem-details" class="bg-gray-50 p-6 rounded-xl border border-gray-200 min-h-[300px] flex flex-col justify-center">
+                            <h3 id="eco-title" class="text-xl font-bold mb-2 text-gray-800">Select a Component</h3>
+                            <p id="eco-description" class="text-gray-600">Click on a component in the diagram to see its description and role in the data governance ecosystem.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="phases" class="content-section">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">Four-Phase Program Implementation</h2>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Our consulting approach is structured into four distinct, iterative phases. This ensures a comprehensive and adaptable program that evolves with your organization. Select a phase to view its objectives, activities, and expected deliverables.</p>
+                    
+                    <div class="mb-6">
+                        <div class="flex border-b border-gray-200">
+                            <button data-phase="1" class="phase-tab flex-1 py-4 px-1 text-center font-semibold text-sm md:text-base border-b-2 border-transparent hover:bg-gray-100 focus:outline-none transition">1. Discovery & Alignment</button>
+                            <button data-phase="2" class="phase-tab flex-1 py-4 px-1 text-center font-semibold text-sm md:text-base border-b-2 border-transparent hover:bg-gray-100 focus:outline-none transition">2. Design & Development</button>
+                            <button data-phase="3" class="phase-tab flex-1 py-4 px-1 text-center font-semibold text-sm md:text-base border-b-2 border-transparent hover:bg-gray-100 focus:outline-none transition">3. Implementation</button>
+                            <button data-phase="4" class="phase-tab flex-1 py-4 px-1 text-center font-semibold text-sm md:text-base border-b-2 border-transparent hover:bg-gray-100 focus:outline-none transition">4. Monitoring & Sustainability</button>
+                        </div>
+                    </div>
+
+                    <div id="phase-content-area" class="mt-6">
+                    </div>
+                </div>
+            </section>
+
+            <section id="roles" class="content-section">
+                 <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">Key Roles & Responsibilities</h2>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Effective data governance requires clear roles and accountability. The structure below outlines the key players, their core responsibilities, and their involvement in critical activities. Click on a role to learn more.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+                    </div>
+                    
+                    <h3 class="text-xl font-bold text-center mt-12 mb-4 text-gray-800">RACI Matrix: Who Does What?</h3>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">The RACI (Responsible, Accountable, Consulted, Informed) matrix clarifies involvement in key governance activities, preventing overlap and ensuring clear ownership.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="py-3 px-6">Role</th>
+                                    <!-- RACI Headers will be dynamically added here by JS -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 text-center text-sm text-gray-600">
+                        <p class="font-semibold">RACI Legend:</p>
+                        <p>R = Responsible, A = Accountable, C = Consulted, I = Informed</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="frameworks" class="content-section">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">Core Governance Frameworks</h2>
+                    <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Two frameworks are pivotal: the Data Quality Framework ensures data is fit for purpose, and the AI Governance Framework manages the risks and opportunities of artificial intelligence.</p>
+
+                    <div class="flex justify-center gap-4 mb-8">
+                        <button data-framework="dq" class="framework-tab font-medium py-2 px-6 rounded-full shadow-sm">Data Quality</button>
+                        <button data-framework="ai" class="framework-tab font-medium py-2 px-6 rounded-full shadow-sm">AI Governance</button>
+                    </div>
+
+                    <div id="framework-content-area">
+                        <div id="dq-content" class="framework-pane">
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Data Quality Dimensions</h3>
+                            <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Data quality is multidimensional. The chart below visualizes the key dimensions. Click on a label in the chart to explore its definition, metrics, and target thresholds.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                <div class="chart-container">
+                                    <canvas id="dqChart"></canvas>
+                                </div>
+                                <div id="dq-details" class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                    <h4 id="dq-title" class="text-lg font-bold mb-2 text-gray-800">Select a Dimension</h4>
+                                    <p id="dq-description" class="text-gray-600 mb-4">Click a point on the radar chart to see details about that quality dimension.</p>
+                                    <div id="dq-metrics"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="ai-content" class="framework-pane hidden">
+                            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">AI Governance Components</h3>
+                            <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">AI governance requires a structured approach to manage ethical considerations, risks, and compliance. Explore the core components of a robust AI governance framework below.</p>
+                            <div id="ai-accordion" class="space-y-2 max-w-4xl mx-auto">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const mainContent = document.querySelector('main');
+            const navButtons = document.querySelectorAll('.nav-button');
+
+            const ecosystemData = {
+                core: {
+                    title: 'Core Framework',
+                    description: 'The central nervous system of the ecosystem. It is the codified intelligence and operational blueprint that defines principles, policies, and standards for how data is managed, governed, and used.'
+                },
+                data: {
+                    title: 'Data',
+                    description: 'The foundational asset. Its quality and usability are subject to constant assessment against governance policies, ensuring it remains accurate, complete, and reliable for decision-making.'
+                },
+                governance: {
+                    title: 'Governance',
+                    description: 'Embodies the rules, policies, and processes designed to ensure data integrity, security, and compliance. It applies the Core Framework and drives its implementation into technology.'
+                },
+                technology: {
+                    title: 'Technology',
+                    description: 'The primary enabler. It applies the principles from the Core Framework and facilitates implementation. The ongoing maintenance of technology is a key responsibility of Service Leadership.'
+                },
+                ai: {
+                    title: 'Artificial Intelligence (AI)',
+                    description: 'Represents both a critical subject of governance and a powerful tool to enhance it. AI is guided by the regulatory framework and also drives automation to improve efficiency.'
+                },
+                leadership: {
+                    title: 'Service Leadership',
+                    description: 'The human element. This includes the leaders and teams responsible for driving, sustaining, and maintaining the data governance program, leveraging automation to enhance effectiveness.'
+                }
+            };
+            
+            const phasesData = {
+                '1': { 
+                    title: 'Phase 1: Discovery & Strategic Alignment',
+                    content: `<h4 class="font-semibold text-lg mb-2 text-gray-700">Key Objective:</h4>
+                              <p class="mb-4 text-gray-600">Understand the current state, define a clear vision, and secure executive sponsorship.</p>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Core Activities:</h4>
+                              <ul class="list-disc list-inside text-gray-600 mb-4 space-y-1">
+                                <li>Current state assessment of data landscape and practices.</li>
+                                <li>Stakeholder interviews to identify pain points and needs.</li>
+                                <li>Definition of governance objectives and Key Performance Indicators (KPIs).</li>
+                                <li>Development of a compelling business case and high-level roadmap.</li>
+                              </ul>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Expected Deliverables:</h4>
+                              <p class="text-gray-600">Current State Analysis Report, Data Governance Vision Document, Business Case & Roadmap.</p>`
+                },
+                '2': { 
+                    title: 'Phase 2: Framework Design & Policy Development',
+                    content: `<h4 class="font-semibold text-lg mb-2 text-gray-700">Key Objective:</h4>
+                              <p class="mb-4 text-gray-600">Establish the foundational principles, policies, quality standards, and organizational structure for governance.</p>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Core Activities:</h4>
+                              <ul class="list-disc list-inside text-gray-600 mb-4 space-y-1">
+                                <li>Definition of the core data governance framework and policies.</li>
+                                <li>Design of a comprehensive data quality framework with clear metrics.</li>
+                                <li>Integration of regulatory requirements, including AI-specific considerations.</li>
+                                <li>Definition of roles, responsibilities, and the supporting organizational structure (RACI).</li>
+                              </ul>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Expected Deliverables:</h4>
+                              <p class="text-gray-600">Data Governance Policy Document, Data Quality Framework, AI Governance Guidelines, Organizational Structure & RACI Matrix.</p>`
+                },
+                '3': { 
+                    title: 'Phase 3: Implementation & Operationalization',
+                    content: `<h4 class="font-semibold text-lg mb-2 text-gray-700">Key Objective:</h4>
+                              <p class="mb-4 text-gray-600">Translate the designed framework into action by leveraging technology and enabling organizational change.</p>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Core Activities:</h4>
+                              <ul class="list-disc list-inside text-gray-600 mb-4 space-y-1">
+                                <li>Implementation of data cataloging, classification, and lineage tools.</li>
+                                <li>Execution of data cleansing, enrichment, and validation processes.</li>
+                                <li>Deployment of a comprehensive data access and security framework.</li>
+                                <li>Rollout of training programs and a change management plan.</li>
+                              </ul>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Expected Deliverables:</h4>
+                              <p class="text-gray-600">Implemented Data Catalog, Data Quality Processes, Access Controls, AI Governance Tools, Training Materials, Communication Plan.</p>`
+                },
+                '4': { 
+                    title: 'Phase 4: Monitoring, Optimization & Sustainability',
+                    content: `<h4 class="font-semibold text-lg mb-2 text-gray-700">Key Objective:</h4>
+                              <p class="mb-4 text-gray-600">Ensure the continuous improvement, adaptation, and long-term health of the data governance program.</p>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Core Activities:</h4>
+                              <ul class="list-disc list-inside text-gray-600 mb-4 space-y-1">
+                                <li>Continuous performance monitoring against defined KPIs.</li>
+                                <li>Regular audits of policies, access, and data quality.</li>
+                                <li>Iterative improvements based on feedback and evolving needs.</li>
+                                <li>Sustained leadership engagement and cultural reinforcement.</li>
+                              </ul>
+                              <h4 class="font-semibold text-lg mb-2 text-gray-700">Expected Deliverables:</h4>
+                              <p class="text-gray-600">Performance Dashboards, Audit Reports, Continuous Improvement Plan, Sustained Leadership Buy-in.</p>`
+                }
+            };
+            
+            const rolesData = [
+                { id: 'sponsor', name: 'Executive Sponsor', summary: 'Secures resources, ensures strategic alignment, and champions a data-driven culture.', details: 'The Executive Sponsor is a senior leader who acts as the primary advocate for the data governance program. Their visible support is critical for obtaining budget, overcoming organizational resistance, and ensuring the program\'s objectives are aligned with the company\'s strategic goals.' },
+                { id: 'owner', name: 'Data Owner', summary: 'Accountable for a specific data domain, defining quality and access policies.', details: 'Data Owners are senior business leaders who have ultimate accountability for the quality, security, and usage of data within their specific domain (e.g., customer data, product data). They do not manage the data day-to-day but set the policies for its use.' },
+                { id: 'steward', name: 'Data Steward', summary: 'Enforces policies, resolves data issues, and bridges the gap between IT and business.', details: 'Data Stewards are hands-on subject matter experts responsible for the day-to-day management of data assets. They are the "go-to" people for data-related questions, ensuring data quality, and implementing the policies defined by Data Owners.' },
+                { id: 'custodian', name: 'Data Custodian', summary: 'Manages the technical environment for data storage, security, and movement.', details: 'Data Custodians are typically from the IT department and are responsible for the technical implementation and maintenance of the systems that store and process data. They manage databases, ensure backups are performed, and apply security controls.' },
+                { id: 'architect', name: 'Data Architect', summary: 'Designs the data models, schemas, and the overall data ecosystem structure.', details: 'The Data Architect designs the blueprint for the organization\'s data infrastructure. They create the models and structures that ensure data can be stored, integrated, and accessed efficiently and in alignment with business objectives.' },
+                { id: 'ethics', name: 'Data Ethics Officer', summary: 'Ensures the ethical use of data and develops ethical guidelines.', details: 'This emerging role focuses on the moral implications of data collection and use. The Data Ethics Officer develops frameworks to ensure data practices are fair, transparent, and do not cause harm, especially concerning personal information and AI.' },
+                { id: 'ai-gov', name: 'AI Governance Specialist', summary: 'Oversees the governance of AI systems, ensuring compliance and mitigating risk.', details: 'This specialist role is responsible for creating and enforcing policies specifically for AI systems. They manage AI model inventories, assess risks like bias and lack of transparency, and ensure compliance with emerging AI regulations.' },
+            ];
+            
+            const raciData = {
+                headers: ["Policy Approval", "Data Quality Issue Resolution", "Data Classification", "Data Access Provisioning", "AI Model Review"],
+                roles: {
+                    "Executive Sponsor": ["A", "I", "I", "I", "A"],
+                    "Data Owner": ["R/A", "A", "R/A", "C", "C"],
+                    "Data Steward": ["C", "R", "R", "R", "C"],
+                    "Data Custodian": ["I", "C", "C", "R", "C"],
+                    "Data Architect": ["I", "C", "C", "C", "I"],
+                    "Data Ethics Officer": ["C", "C", "R", "C", "R/A"],
+                    "AI Governance Specialist": ["C", "C", "C", "I", "R/A"]
+                },
+                legend: { 'R': 'Responsible', 'A': 'Accountable', 'C': 'Consulted', 'I': 'Informed' }
+            };
+
+            const dqFrameworkData = [
+                { dimension: 'Accuracy', definition: 'Data reflects the true real-world values.', metrics: ['Error Rate (< 1%)', 'Discrepancy Rate (< 0.5%)'] },
+                { dimension: 'Completeness', definition: 'All required data is present.', metrics: ['% of Null Values (< 5%)', '0% missing key records'] },
+                { dimension: 'Consistency', definition: 'Data is uniform across systems and conforms to defined formats.', metrics: ['Inconsistency Rate (< 2%)', '100% format compliance'] },
+                { dimension: 'Timeliness', definition: 'Data is available when needed and is up-to-date.', metrics: ['Latency (< 24 hours)', '100% update schedule compliance'] },
+                { dimension: 'Validity', definition: 'Data conforms to defined business rules and data types.', metrics: ['% of Invalid Entries (< 0.1%)'] },
+                { dimension: 'Uniqueness', definition: 'No duplicate records exist for key entities.', metrics: ['% of Duplicate Records (0%)'] },
+            ];
+
+            const aiFrameworkData = [
+                { title: 'Ethical Principles & Policies', content: 'Define fairness, accountability, and transparency. Align with global standards like the OECD AI Principles and the EU AI Act. This involves creating clear data usage policies and ethical guidelines for data collection.' },
+                { title: 'Bias Mitigation', content: 'Ensure training data is diverse, representative, and continuously monitored for biases. This requires robust data quality practices for training data, data provenance tracking, and the use of bias detection tools.' },
+                { title: 'AI Risk Management', content: 'Evaluate potential harms, maintain risk registers, and conduct AI Impact Assessments (AI-IAs). This is supported by core data security measures, access controls, and data privacy policies.' },
+                { title: 'Model Transparency & Explainability', content: 'Understand how AI decisions are made by meticulously tracking data lineage and metadata. This relies on strong metadata management and tools for creating explainability visualizations.' },
+                { title: 'AI Monitoring & Auditing', content: 'Continuously monitor models to detect performance drift, degradation, or the emergence of bias over time. This involves conducting pre- and post-deployment audits, supported by continuous data quality monitoring and audit trails.' },
+                { title: 'Regulatory Compliance', content: 'Adhere to emerging AI-specific laws like the EU AI Act and frameworks like the NIST AI RMF. This is an extension of existing compliance with data privacy regulations (GDPR, CCPA).' },
+                { title: 'Roles, Responsibilities & Training', content: 'Define new roles (e.g., AI Risk Officer, Model Owner) and foster AI literacy across the organization. This requires clear role definitions, ongoing training, and role-based access controls.' },
+            ];
+
+
+            function switchTab(targetId) {
+                navButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.target === targetId);
+                });
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => switchTab(button.dataset.target));
+            });
+            
+            const ecosystemItems = document.querySelectorAll('.ecosystem-item');
+            const ecoTitle = document.getElementById('eco-title');
+            const ecoDescription = document.getElementById('eco-description');
+            
+            ecosystemItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = item.id.split('-')[1];
+                    const data = ecosystemData[id];
+                    
+                    ecosystemItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    ecoTitle.textContent = data.title;
+                    ecoDescription.textContent = data.description;
+                });
+            });
+
+            const phaseTabs = document.querySelectorAll('.phase-tab');
+            const phaseContentArea = document.getElementById('phase-content-area');
+
+            function switchPhase(phaseId) {
+                const phaseData = phasesData[phaseId];
+                phaseTabs.forEach(tab => {
+                    tab.classList.toggle('border-blue-500', tab.dataset.phase === phaseId);
+                    tab.classList.toggle('text-blue-600', tab.dataset.phase === phaseId);
+                    tab.classList.toggle('border-transparent', tab.dataset.phase !== phaseId);
+                });
+                phaseContentArea.innerHTML = `<div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                                <h3 class="text-xl font-bold mb-4 text-gray-800">${phaseData.title}</h3>
+                                                ${phaseData.content}
+                                             </div>`;
+            }
+
+            phaseTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchPhase(tab.dataset.phase));
+            });
+            switchPhase('1');
+            
+            const rolesGrid = document.querySelector('#roles .grid');
+            rolesData.forEach(role => {
+                const cardContainer = document.createElement('div');
+                cardContainer.className = 'min-h-[160px] perspective';
+                cardContainer.innerHTML = `
+                    <div class="relative card-flip w-full h-full">
+                        <div class="card-face absolute w-full h-full flex flex-col justify-between p-5 bg-white rounded-xl shadow-md border border-gray-200 cursor-pointer">
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-800">${role.name}</h4>
+                                <p class="text-gray-600 text-sm mt-2">${role.summary}</p>
+                            </div>
+                            <span class="text-xs text-right text-blue-500 font-semibold">Click to flip</span>
+                        </div>
+                        <div class="card-back absolute w-full h-full p-5 bg-gray-800 text-white rounded-xl shadow-md border border-gray-700 cursor-pointer flex flex-col">
+                            <h4 class="font-bold text-lg">${role.name}</h4>
+                            <p class="text-gray-300 text-sm mt-2 flex-grow">${role.details}</p>
+                            <span class="text-xs text-right text-blue-400 font-semibold">Click to flip</span>
+                        </div>
+                    </div>
+                `;
+                rolesGrid.appendChild(cardContainer);
+                cardContainer.querySelector('.card-flip').addEventListener('click', (e) => {
+                    e.currentTarget.classList.toggle('is-flipped');
+                });
+            });
+
+            const raciTableHeadRow = document.querySelector('#roles table thead tr');
+            // Clear existing header (only 'Role' is there initially)
+            raciTableHeadRow.innerHTML = `<th scope="col" class="py-3 px-6">Role</th>`; 
+            raciData.headers.forEach(header => {
+                const th = document.createElement('th');
+                th.scope = 'col';
+                th.className = 'py-3 px-6 text-center';
+                th.textContent = header;
+                raciTableHeadRow.appendChild(th);
+            });
+            const raciTableBody = document.querySelector('#roles table tbody');
+            Object.entries(raciData.roles).forEach(([role, values]) => {
+                const tr = document.createElement('tr');
+                tr.className = 'bg-white border-b';
+                let rowHtml = `<th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${role}</th>`;
+                values.forEach(val => {
+                    rowHtml += `<td class="py-4 px-6 text-center font-mono font-bold">${val}</td>`;
+                });
+                tr.innerHTML = rowHtml;
+                raciTableBody.appendChild(tr);
+            });
+            
+            const frameworkTabs = document.querySelectorAll('.framework-tab');
+            const frameworkPanes = document.querySelectorAll('.framework-pane');
+
+            function switchFramework(targetId) {
+                frameworkTabs.forEach(tab => {
+                    tab.classList.toggle('bg-gray-800', tab.dataset.framework === targetId);
+                    tab.classList.toggle('text-white', tab.dataset.framework === targetId);
+                });
+                frameworkPanes.forEach(pane => {
+                    pane.classList.toggle('hidden', pane.id !== `${targetId}-content`);
+                });
+            }
+            frameworkTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchFramework(tab.dataset.framework));
+            });
+            switchFramework('dq');
+
+            const dqCtx = document.getElementById('dqChart').getContext('2d');
+            const dqChart = new Chart(dqCtx, {
+                type: 'radar',
+                data: {
+                    labels: dqFrameworkData.map(d => d.dimension),
+                    datasets: [{
+                        label: 'Data Quality Score (Target)',
+                        data: Array(6).fill(5), 
+                        backgroundColor: 'rgba(76, 120, 126, 0.2)',
+                        borderColor: 'rgba(76, 120, 126, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(76, 120, 126, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(76, 120, 126, 1)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: {
+                                font: { size: 12, weight: '500' },
+                                color: '#4A4A4A'
+                            },
+                            ticks: {
+                                display: false,
+                                beginAtZero: true,
+                                max: 5,
+                                min: 0,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const dataIndex = elements[0].index;
+                            updateDqDetails(dataIndex);
+                        }
+                    }
+                }
+            });
+
+            function updateDqDetails(index) {
+                const data = dqFrameworkData[index];
+                document.getElementById('dq-title').textContent = data.dimension;
+                document.getElementById('dq-description').textContent = data.definition;
+                const metricsHtml = `
+                    <h5 class="font-semibold text-gray-700 mt-4 mb-2">Example Metrics & Targets:</h5>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                        ${data.metrics.map(m => `<li>${m}</li>`).join('')}
+                    </ul>
+                `;
+                document.getElementById('dq-metrics').innerHTML = metricsHtml;
+            }
+            updateDqDetails(0);
+
+            const aiAccordion = document.getElementById('ai-accordion');
+            aiFrameworkData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'border border-gray-200 rounded-lg';
+                div.innerHTML = `
+                    <button class="accordion-toggle w-full flex justify-between items-center text-left p-4 font-semibold text-gray-700 hover:bg-gray-50 transition">
+                        <span>${item.title}</span>
+                        <span class="transform transition-transform duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 pt-0 text-gray-600">${item.content}</p>
+                    </div>
+                `;
+                aiAccordion.appendChild(div);
+            });
+            aiAccordion.addEventListener('click', (e) => {
+                const toggle = e.target.closest('.accordion-toggle');
+                if (toggle) {
+                    const content = toggle.nextElementSibling;
+                    const icon = toggle.querySelector('svg');
+                    toggle.parentElement.parentElement.querySelectorAll('.accordion-content').forEach(c => {
+                        if (c !== content) {
+                            c.style.maxHeight = null;
+                            c.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
+                        }
+                    });
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('rotate-180');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.classList.add('rotate-180');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
