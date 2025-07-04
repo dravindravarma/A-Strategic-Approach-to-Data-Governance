@@ -8,13 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: The application is structured as a single-page dashboard with four main, navigable sections: 'Ecosystem Overview', 'Program Phases', 'Key Roles & Responsibilities', and 'Core Frameworks'. This non-linear, tab-based structure was chosen to break down the dense, text-heavy report into manageable, thematic modules. It prioritizes user-driven exploration over a forced, linear reading of the original document. This approach allows users to quickly access the information most relevant to them (e.g., a manager might focus on 'Key Roles', while a technical user explores 'Core Frameworks'), enhancing usability and comprehension. -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard with five main, navigable sections: 'Ecosystem Overview', 'Program Phases', 'Key Roles & Responsibilities', 'Core Frameworks', and 'Milestones'. This non-linear, tab-based structure was chosen to break down the dense, text-heavy report into manageable, thematic modules. It prioritizes user-driven exploration over a forced, linear reading of the original document. This approach allows users to quickly access the information most relevant to them (e.g., a manager might focus on 'Key Roles', while a technical user explores 'Core Frameworks'), enhancing usability and comprehension. -->
     <!-- Visualization & Content Choices: 
         - Report Info: Core Governance Ecosystem Diagram -> Goal: Explain relationships -> Viz: Interactive HTML/CSS diagram -> Interaction: Click component to see details -> Justification: Transforms a static diagram into an explorable learning tool. Library: Vanilla JS.
         - Report Info: Four Program Phases -> Goal: Show process/sequence -> Viz: Tabbed content sections -> Interaction: Click tab to reveal phase details -> Justification: Organizes detailed content logically, preventing a long scroll and allowing focused reading. Library: Vanilla JS.
         - Report Info: Table 1 (Roles & RACI) -> Goal: Organize/Compare roles -> Viz: Interactive card grid & filterable table -> Interaction: Click role card for details, filter RACI table -> Justification: Makes complex role definitions and responsibilities easy to digest and compare. Library: Vanilla JS.
         - Report Info: Table 2 (Data Quality Dimensions) -> Goal: Compare metrics -> Viz: Radar Chart -> Interaction: Click chart point to see dimension details -> Justification: Provides an immediate visual comparison of the interdependent quality dimensions. Library: Chart.js.
         - Report Info: Table 4 (AI Governance) -> Goal: Inform/Organize -> Viz: Interactive accordion list -> Interaction: Click to expand/collapse item -> Justification: Presents detailed list content in a compact, user-controlled format. Library: Vanilla JS.
+        - NEW: Report Info: Project Milestones -> Goal: Show timeline/schedule -> Viz: Interactive vertical timeline -> Interaction: Hover to highlight -> Justification: Provides a clear, chronological view of the project plan, making it easy to track progress. Library: Vanilla JS.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -31,8 +32,10 @@
         .chart-container { position: relative; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
         @media (min-width: 768px) { .chart-container { height: 400px; } }
         .ecosystem-item { transition: all 0.3s ease; border-width: 2px; }
-        .ecosystem-item.active { border-color: #4C787E; background-color: #F0F5F6; }
+        .ecosystem-item.active { transform: scale(1.05); box-shadow: 0 0 15px rgba(0,0,0,0.2); }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .timeline-item { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .timeline-item:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body class="antialiased">
@@ -42,6 +45,7 @@
         <header class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800">A Strategic Approach to Data Governance</h1>
             <p class="mt-2 text-lg text-gray-600">An interactive guide to building a complete data governance program.</p>
+            <p class="mt-4 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500">Ravindra Varma</p>
         </header>
 
         <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
@@ -49,6 +53,7 @@
             <button data-target="phases" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Program Phases</button>
             <button data-target="roles" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Key Roles</button>
             <button data-target="frameworks" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Core Frameworks</button>
+            <button data-target="milestones" class="nav-button text-sm md:text-base font-medium py-2 px-4 rounded-full shadow-sm">Milestones</button>
         </nav>
 
         <main>
@@ -60,23 +65,27 @@
                         <div class="lg:col-span-2">
                             <div class="relative w-full h-[500px] md:h-[600px] border-2 border-dashed border-gray-200 rounded-xl p-4 flex items-center justify-center">
                                 <div id="ecosystem-diagram" class="relative w-full h-full">
-                                    <div id="eco-core" class="ecosystem-item absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-40 md:h-40 bg-gray-100 rounded-full flex items-center justify-center text-center p-2 cursor-pointer border-gray-300">
-                                        <span class="font-bold text-gray-700">Core Framework</span>
+                                    <!-- Centerpiece -->
+                                    <div id="eco-core" class="ecosystem-item absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-40 md:h-40 bg-slate-200 rounded-full flex items-center justify-center text-center p-2 cursor-pointer border-slate-400">
+                                        <span class="font-bold text-slate-800">Core Framework</span>
                                     </div>
-                                    <div id="eco-data" class="ecosystem-item absolute top-[10%] left-1/2 -translate-x-1/2 w-24 h-24 md:w-28 md:h-28 bg-[#E0F2F7] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#B2D8E4]">
-                                        <span class="font-semibold text-[#2C7A8F]">Data</span>
+                                    <!-- Top Row -->
+                                    <div id="eco-data" class="ecosystem-item absolute top-[10%] left-[20%] w-24 h-24 md:w-28 md:h-28 bg-blue-100 rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-blue-400">
+                                        <span class="font-semibold text-blue-800">Data</span>
                                     </div>
-                                    <div id="eco-governance" class="ecosystem-item absolute top-1/2 right-[5%] -translate-y-1/2 w-24 h-24 md:w-28 md:h-28 bg-[#E6F4EA] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#B8E0C4]">
-                                        <span class="font-semibold text-[#388E3C]">Governance</span>
+                                    <div id="eco-ai" class="ecosystem-item absolute top-[10%] right-[20%] w-24 h-24 md:w-28 md:h-28 bg-purple-100 rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-purple-400">
+                                        <span class="font-semibold text-purple-800">AI</span>
                                     </div>
-                                    <div id="eco-technology" class="ecosystem-item absolute bottom-[10%] right-[20%] w-24 h-24 md:w-28 md:h-28 bg-[#F3E8FF] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#D1B3FF]">
-                                        <span class="font-semibold text-[#673AB7]">Technology</span>
+                                    <!-- Middle Row (Sides) -->
+                                    <div id="eco-governance" class="ecosystem-item absolute top-1/2 left-[5%] -translate-y-1/2 w-24 h-24 md:w-28 md:h-28 bg-green-100 rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-green-400">
+                                        <span class="font-semibold text-green-800">Governance</span>
                                     </div>
-                                    <div id="eco-ai" class="ecosystem-item absolute bottom-[10%] left-[20%] w-24 h-24 md:w-28 md:h-28 bg-[#FFF8E1] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#FFECB3]">
-                                        <span class="font-semibold text-[#FFC107]">AI</span>
+                                    <div id="eco-technology" class="ecosystem-item absolute top-1/2 right-[5%] -translate-y-1/2 w-24 h-24 md:w-28 md:h-28 bg-teal-100 rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-teal-400">
+                                        <span class="font-semibold text-teal-800">Technology</span>
                                     </div>
-                                    <div id="eco-leadership" class="ecosystem-item absolute top-1/2 left-[5%] -translate-y-1/2 w-24 h-24 md:w-28 md:h-28 bg-[#FDECEF] rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-[#FBCDCB]">
-                                        <span class="font-semibold text-[#D32F2F]">Service Leadership</span>
+                                    <!-- Bottom Row -->
+                                    <div id="eco-leadership" class="ecosystem-item absolute bottom-[10%] left-1/2 -translate-x-1/2 w-24 h-24 md:w-28 md:h-28 bg-red-100 rounded-lg flex items-center justify-center text-center p-2 cursor-pointer border-red-400">
+                                        <span class="font-semibold text-red-800">Service Leadership</span>
                                     </div>
                                 </div>
                             </div>
@@ -169,6 +178,18 @@
                             <div id="ai-accordion" class="space-y-2 max-w-4xl mx-auto">
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="milestones" class="content-section">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">Project Milestones & Timeline</h2>
+                    <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">This timeline outlines the key milestones for each phase of the data governance program, providing a clear roadmap for implementation and delivery.</p>
+                    <div id="timeline-container" class="relative max-w-5xl mx-auto">
+                        <!-- Vertical line -->
+                        <div class="absolute left-1/2 -ml-px w-0.5 h-full bg-gray-200"></div>
+                        <!-- Milestones will be dynamically inserted here -->
                     </div>
                 </div>
             </section>
@@ -309,6 +330,41 @@
                 { title: 'Regulatory Compliance', content: 'Adhere to emerging AI-specific laws like the EU AI Act and frameworks like the NIST AI RMF. This is an extension of existing compliance with data privacy regulations (GDPR, CCPA).' },
                 { title: 'Roles, Responsibilities & Training', content: 'Define new roles (e.g., AI Risk Officer, Model Owner) and foster AI literacy across the organization. This requires clear role definitions, ongoing training, and role-based access controls.' },
             ];
+            
+            const milestonesData = [
+                {
+                    phase: "Phase 1: Discovery & Alignment (Weeks 1-4)",
+                    items: [
+                        { title: "Project Kick-off & Stakeholder Alignment", description: "Official start, defining project scope, objectives, and success criteria with all key stakeholders.", week: "Week 1" },
+                        { title: "Current State Assessment", description: "In-depth analysis of existing data infrastructure, processes, and governance maturity.", week: "Weeks 1-3" },
+                        { title: "Vision & Business Case Finalization", description: "Deliver a clear vision document and a compelling business case with a high-level roadmap.", week: "Week 4" }
+                    ]
+                },
+                {
+                    phase: "Phase 2: Design & Development (Weeks 5-10)",
+                    items: [
+                        { title: "Core Framework & Policy Definition", description: "Develop and ratify the central data governance policies and the overarching framework.", week: "Weeks 5-7" },
+                        { title: "Data Quality & AI Framework Design", description: "Define data quality dimensions, metrics, and the specific guidelines for AI governance.", week: "Weeks 6-8" },
+                        { title: "Organizational Model & RACI Finalization", description: "Finalize the governance roles, responsibilities, and the complete RACI matrix.", week: "Weeks 9-10" }
+                    ]
+                },
+                {
+                    phase: "Phase 3: Implementation (Weeks 11-20)",
+                    items: [
+                        { title: "Pilot Program Launch (Priority Domain)", description: "Roll out the governance framework within a selected, high-impact data domain.", week: "Weeks 11-14" },
+                        { title: "Technology Implementation", description: "Deploy and configure necessary tools for data catalog, quality monitoring, and access control.", week: "Weeks 12-18" },
+                        { title: "Training & Change Management Rollout", description: "Begin organization-wide communication and training programs for all affected staff.", week: "Weeks 15-20" }
+                    ]
+                },
+                {
+                    phase: "Phase 4: Monitoring & Sustainability (Ongoing)",
+                    items: [
+                        { title: "First Performance Review", description: "Conduct the first formal review of the program's KPIs and pilot program outcomes.", week: "Week 22" },
+                        { title: "Program Expansion to New Domains", description: "Begin the phased rollout of the governance program to other data domains across the organization.", week: "Quarter 4" },
+                        { title: "Establish Annual Audit Cycle", description: "Formalize and schedule the first annual audit of the data governance program.", week: "End of Year 1" }
+                    ]
+                }
+            ];
 
 
             function switchTab(targetId) {
@@ -324,6 +380,7 @@
                 button.addEventListener('click', () => switchTab(button.dataset.target));
             });
             
+            // Ecosystem Section Logic
             const ecosystemItems = document.querySelectorAll('.ecosystem-item');
             const ecoTitle = document.getElementById('eco-title');
             const ecoDescription = document.getElementById('eco-description');
@@ -338,9 +395,17 @@
 
                     ecoTitle.textContent = data.title;
                     ecoDescription.textContent = data.description;
+                    
+                    const detailsBox = document.getElementById('ecosystem-details');
+                    const activeItem = document.querySelector('.ecosystem-item.active');
+                    if (activeItem) {
+                        const color = window.getComputedStyle(activeItem).borderColor;
+                        detailsBox.style.borderColor = color;
+                    }
                 });
             });
 
+            // Phases Section Logic
             const phaseTabs = document.querySelectorAll('.phase-tab');
             const phaseContentArea = document.getElementById('phase-content-area');
 
@@ -362,6 +427,7 @@
             });
             switchPhase('1');
             
+            // Roles Section Logic
             const rolesGrid = document.querySelector('#roles .grid');
             rolesData.forEach(role => {
                 const cardContainer = document.createElement('div');
@@ -389,7 +455,6 @@
             });
 
             const raciTableHeadRow = document.querySelector('#roles table thead tr');
-            // Clear existing header (only 'Role' is there initially)
             raciTableHeadRow.innerHTML = `<th scope="col" class="py-3 px-6">Role</th>`; 
             raciData.headers.forEach(header => {
                 const th = document.createElement('th');
@@ -410,6 +475,7 @@
                 raciTableBody.appendChild(tr);
             });
             
+            // Frameworks Section Logic
             const frameworkTabs = document.querySelectorAll('.framework-tab');
             const frameworkPanes = document.querySelectorAll('.framework-pane');
 
@@ -492,7 +558,7 @@
             updateDqDetails(0);
 
             const aiAccordion = document.getElementById('ai-accordion');
-            aiFrameworkData.forEach((item, index) => {
+            aiFrameworkData.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = 'border border-gray-200 rounded-lg';
                 div.innerHTML = `
@@ -527,6 +593,47 @@
                         icon.classList.add('rotate-180');
                     }
                 }
+            });
+
+            // Milestones Section Logic
+            const timelineContainer = document.getElementById('timeline-container');
+            milestonesData.forEach((phase, phaseIndex) => {
+                // Add Phase Header
+                const phaseHeader = document.createElement('div');
+                phaseHeader.className = 'relative mb-8';
+                phaseHeader.innerHTML = `
+                    <div class="flex items-center justify-center">
+                        <span class="z-10 bg-white px-4 py-1 rounded-full border-2 border-gray-300 font-semibold text-gray-700">${phase.phase}</span>
+                    </div>
+                `;
+                timelineContainer.appendChild(phaseHeader);
+
+                // Add Milestone Items for the Phase
+                phase.items.forEach((item, itemIndex) => {
+                    const sideClass = itemIndex % 2 === 0 ? 'left' : 'right';
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'relative mb-8';
+                    
+                    const contentAlignment = sideClass === 'left' ? 'md:pr-8 text-right' : 'md:pl-8 text-left';
+                    const pointerAlignment = sideClass === 'left' 
+                        ? 'right-0 -mr-2 border-r-8 border-l-0' 
+                        : 'left-0 -ml-2 border-l-8 border-r-0';
+
+                    itemDiv.innerHTML = `
+                        <div class="md:flex ${sideClass === 'left' ? 'justify-end' : 'justify-start'}">
+                            <div class="md:w-5/12">
+                                <div class="timeline-item bg-white p-4 rounded-lg border border-gray-200 shadow-sm ${contentAlignment}">
+                                    <span class="font-bold text-sm text-blue-600">${item.week}</span>
+                                    <h4 class="font-bold text-gray-800 mt-1">${item.title}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">${item.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 -mt-2 w-1/2 h-4 ${pointerAlignment} border-t-8 border-b-8 border-transparent" style="${sideClass === 'left' ? 'right: 50%;' : 'left: 50%;'}"></div>
+                        <div class="absolute top-1/2 -mt-2.5 w-5 h-5 bg-blue-500 rounded-full z-10" style="left: 50%; transform: translateX(-50%);"></div>
+                    `;
+                    timelineContainer.appendChild(itemDiv);
+                });
             });
         });
     </script>
